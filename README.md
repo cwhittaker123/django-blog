@@ -1,2 +1,2 @@
 # django-blog
-A web-app written using Django
+A blog style web-app written using Django
