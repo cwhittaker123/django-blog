@@ -23,7 +23,4 @@ class Room(models.Model):
     created = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        """
-        Return str representation of the model
-        """
-        self.name
+        return str(self.name)
