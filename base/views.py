@@ -1,8 +1,9 @@
-from multiprocessing import context
 from django.shortcuts import render
 from django.http import HttpResponse, HttpRequest
 
 # Create your views here.
+# Views contain logic and inject dynamic data into rendered templates
+# They receive an HttpRequest and return a HttpResponse
 
 rooms = [
     {'id': 1, 'name': 'Learn Python'},
