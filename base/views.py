@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpRequest
-from base.models import Room
+from django.db.models import Q
+from base.models import Room, Topic
 from base.forms import RoomForm
 
 # Create your views here.
@@ -16,9 +17,25 @@ from base.forms import RoomForm
 def home(request : HttpRequest) -> HttpResponse:
     # queryset = ModelName.objects.all()/.get()/.filter()/.exclude()
     # get all rooms in the db
-    rooms = Room.objects.all()
+    # Get the url param q
+    q = request.GET.get('q') if request.GET.get('q') != None else ''
+    # Whatever value is in topic name can match if it's a subset, i means case insenitve
+    # Ex: Py would match Python
+    rooms = Room.objects.all().filter(
+        # Search by topic name, room name, room description
+        Q(topic__name__icontains=q) |
+        Q(name__icontains=q) |
+        Q(description__icontains=q)
+        )
+
+    # get all topics in the db
+    topics = Topic.objects.all()
+
+    # get count of the rooms, works faster than len()
+    room_count = rooms.count()
+
     # Access rooms variable
-    context = {'rooms': rooms}
+    context = {'rooms': rooms, 'topics': topics, 'room_count': room_count}
     return render(request, 'base/home.html', context)
 
 def room(request : HttpRequest, pk : str) -> HttpResponse:
