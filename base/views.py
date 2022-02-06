@@ -1,6 +1,10 @@
+import django
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpRequest
 from django.db.models import Q
+from django.contrib import messages
+from django.contrib.auth.models import User
+from django.contrib.auth import authenticate, login, logout
 from base.models import Room, Topic
 from base.forms import RoomForm
 
@@ -13,6 +17,31 @@ from base.forms import RoomForm
 #     {'id': 2, 'name': 'Design'},
 #     {'id': 3, 'name': 'Frontend Devs'},
 # ]
+
+# Call this loginPage bc login() is a built in function
+def loginPage(request : HttpRequest) -> HttpResponse:
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+
+        # Check if user exist
+        try:
+            user = User.objects.get(username=username)
+        except:
+            # Pass message to template
+            messages.error(request, 'User does not exist')
+
+        # If user does exist, try to authenticate. Returns None if creds are invalid
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            # Add session to db and store in browser as cookie
+            login(request, user)
+            return redirect('home')
+        else:
+            messages.error(request, 'Username or password is incorrect')
+
+    context = {}
+    return render(request, 'base/login_register.html', context)
 
 def home(request : HttpRequest) -> HttpResponse:
     # queryset = ModelName.objects.all()/.get()/.filter()/.exclude()
