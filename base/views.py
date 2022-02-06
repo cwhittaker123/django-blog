@@ -1,8 +1,8 @@
-import django
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpRequest
 from django.db.models import Q
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from base.models import Room, Topic
@@ -20,6 +20,9 @@ from base.forms import RoomForm
 
 # Call this loginPage bc login() is a built in function
 def loginPage(request : HttpRequest) -> HttpResponse:
+    if request.user.is_authenticated:
+        return redirect('home')
+
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
@@ -77,6 +80,8 @@ def room(request : HttpRequest, pk : str) -> HttpResponse:
     context = {'room': room}
     return render(request, 'base/room.html', context)
 
+# Redirect unauth users to the login page
+@login_required(login_url='login')
 def createRoom(request: HttpRequest) -> HttpResponse:
     form = RoomForm()
     if request.method == 'POST':
@@ -90,12 +95,17 @@ def createRoom(request: HttpRequest) -> HttpResponse:
     context = {'form': form}
     return render(request, 'base/room_form.html', context)
 
+@login_required(login_url='login')
 def updateRoom(request: HttpRequest, pk : str) -> HttpResponse:
     """Update a Room by id"""
     room = Room.objects.get(id=pk)
 
     # Prefill form with room values
     form = RoomForm(instance=room)
+
+    # If the user is not the host owner of the room, they cannot update it
+    if request.user != room.host:
+        return HttpResponse('You are not the owner of the room')
 
     if request.method == 'POST':
         # Process request post info and update the existing room
@@ -107,9 +117,15 @@ def updateRoom(request: HttpRequest, pk : str) -> HttpResponse:
     context = {'form': form}
     return render(request, 'base/room_form.html', context)
 
+@login_required(login_url='login')
 def deleteRoom(request: HttpRequest, pk : str) -> HttpResponse:
     """Delete a room by id"""
     room = Room.objects.get(id=pk)
+
+    # If the user is not the host owner of the room, they cannot delete it
+    if request.user != room.host:
+        return HttpResponse('You are not the owner of the room')
+
     if request.method == 'POST':
         room.delete()
         return redirect('home')
