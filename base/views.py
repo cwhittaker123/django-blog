@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.forms import UserCreationForm
 from base.models import Room, Topic
 from base.forms import RoomForm
 
@@ -20,11 +21,12 @@ from base.forms import RoomForm
 
 # Call this loginPage bc login() is a built in function
 def loginPage(request : HttpRequest) -> HttpResponse:
+    page = 'login'
     if request.user.is_authenticated:
         return redirect('home')
 
     if request.method == 'POST':
-        username = request.POST.get('username')
+        username = request.POST.get('username').lower()
         password = request.POST.get('password')
 
         # Check if user exist
@@ -43,13 +45,32 @@ def loginPage(request : HttpRequest) -> HttpResponse:
         else:
             messages.error(request, 'Username or password is incorrect')
 
-    context = {}
+    context = {'page': page}
     return render(request, 'base/login_register.html', context)
 
 def logoutUser(request : HttpRequest) -> HttpResponse:
     # Logout user by deleting session token in db and browser
     logout(request)
     return redirect('home')
+
+def registerPage(request : HttpRequest) -> HttpResponse:
+    form = UserCreationForm()
+    if request.method == 'POST':
+        # Get the data from the form
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            # Save form and freeze in time to access user right away
+            # Clean user data
+            user = form.save(commit=False)
+            user.username = user.username.lower()
+            user.save()
+            login(request, user)
+            return redirect('home')
+        else:
+            # TODO: Add handling to see what is incorrect
+            messages.error(request, 'An error ocurred during registration')
+    context = {'form': form}
+    return render(request, 'base/login_register.html', context)
 
 def home(request : HttpRequest) -> HttpResponse:
     # queryset = ModelName.objects.all()/.get()/.filter()/.exclude()
