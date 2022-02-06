@@ -43,6 +43,11 @@ def loginPage(request : HttpRequest) -> HttpResponse:
     context = {}
     return render(request, 'base/login_register.html', context)
 
+def logoutUser(request : HttpRequest) -> HttpResponse:
+    # Logout user by deleting session token in db and browser
+    logout(request)
+    return redirect('home')
+
 def home(request : HttpRequest) -> HttpResponse:
     # queryset = ModelName.objects.all()/.get()/.filter()/.exclude()
     # get all rooms in the db
