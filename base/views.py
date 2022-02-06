@@ -35,5 +35,23 @@ def createRoom(request: HttpRequest) -> HttpResponse:
         if form.is_valid():
             form.save()
             return redirect('home')
+
+    context = {'form': form}
+    return render(request, 'base/room_form.html', context)
+
+def updateRoom(request: HttpRequest, pk : str) -> HttpResponse:
+    """Update a Room by id"""
+    room = Room.objects.get(id=pk)
+
+    # Prefill form with room values
+    form = RoomForm(instance=room)
+
+    if request.method == 'POST':
+        # Process request post info and update the existing room
+        form = RoomForm(request.POST, instance=room)
+        if form.is_valid():
+            form.save()
+            return redirect('home')
+
     context = {'form': form}
     return render(request, 'base/room_form.html', context)

@@ -8,6 +8,7 @@
     <div>
         {% for room in rooms %}
             <div>
+                <a href="{% url 'update-room' room.id %}">Edit</a>
                 <span>@{{room.host.username}}</span>
                 <!-- Access the room name route with dynamic room.id tag-->
                 <h5>{{room.id}} -- <a href="{% url 'room' room.id %}">{{room.name}}</a></h5>
