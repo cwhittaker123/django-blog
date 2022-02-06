@@ -36,6 +36,10 @@ class Room(models.Model):
     # auto_now_add=True: Only take a timestamp when we first create the instance
     created = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        # Order by newest first
+        ordering = ['-updated', '-created']
+
     def __str__(self) -> str:
         return str(self.name)
 

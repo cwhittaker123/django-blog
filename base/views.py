@@ -1,6 +1,7 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpRequest
 from base.models import Room
+from base.forms import RoomForm
 
 # Create your views here.
 # Views contain logic and inject dynamic data into rendered templates
@@ -24,3 +25,15 @@ def room(request : HttpRequest, pk : str) -> HttpResponse:
     room = Room.objects.get(id=pk)
     context = {'room': room}
     return render(request, 'base/room.html', context)
+
+def createRoom(request: HttpRequest) -> HttpResponse:
+    form = RoomForm()
+    if request.method == 'POST':
+        # Pass in all the values from the POST data to the RoomForm
+        form = RoomForm(request.POST)
+        # If all values are correct, save model in DB and send user to home page
+        if form.is_valid():
+            form.save()
+            return redirect('home')
+    context = {'form': form}
+    return render(request, 'base/room_form.html', context)
